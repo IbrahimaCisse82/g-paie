@@ -9,7 +9,299 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      conventions: {
+        Row: {
+          created_at: string
+          date_entree_vigueur: string | null
+          description: string | null
+          id: string
+          intitule: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_entree_vigueur?: string | null
+          description?: string | null
+          id?: string
+          intitule: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_entree_vigueur?: string | null
+          description?: string | null
+          id?: string
+          intitule?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      employees: {
+        Row: {
+          categorie: string | null
+          convention_collective_id: string | null
+          created_at: string
+          date_entree: string | null
+          date_naissance: string | null
+          date_sortie: string | null
+          id: string
+          lieu_naissance: string | null
+          matricule: string
+          nationalite: string | null
+          nom: string
+          poste: string | null
+          prenom: string
+          sexe: string
+          statut: string
+          type_contrat: string
+          updated_at: string
+        }
+        Insert: {
+          categorie?: string | null
+          convention_collective_id?: string | null
+          created_at?: string
+          date_entree?: string | null
+          date_naissance?: string | null
+          date_sortie?: string | null
+          id?: string
+          lieu_naissance?: string | null
+          matricule: string
+          nationalite?: string | null
+          nom: string
+          poste?: string | null
+          prenom: string
+          sexe: string
+          statut: string
+          type_contrat: string
+          updated_at?: string
+        }
+        Update: {
+          categorie?: string | null
+          convention_collective_id?: string | null
+          created_at?: string
+          date_entree?: string | null
+          date_naissance?: string | null
+          date_sortie?: string | null
+          id?: string
+          lieu_naissance?: string | null
+          matricule?: string
+          nationalite?: string | null
+          nom?: string
+          poste?: string | null
+          prenom?: string
+          sexe?: string
+          statut?: string
+          type_contrat?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_convention_collective_id_fkey"
+            columns: ["convention_collective_id"]
+            isOneToOne: false
+            referencedRelation: "conventions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pay_slips: {
+        Row: {
+          annee: number
+          cotisations_patronales: number | null
+          cotisations_salariales: number | null
+          created_at: string
+          date_generation: string | null
+          employe_id: string
+          id: string
+          mois: string
+          salaire_brut: number | null
+          salaire_net: number | null
+          updated_at: string
+        }
+        Insert: {
+          annee: number
+          cotisations_patronales?: number | null
+          cotisations_salariales?: number | null
+          created_at?: string
+          date_generation?: string | null
+          employe_id: string
+          id?: string
+          mois: string
+          salaire_brut?: number | null
+          salaire_net?: number | null
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          cotisations_patronales?: number | null
+          cotisations_salariales?: number | null
+          created_at?: string
+          date_generation?: string | null
+          employe_id?: string
+          id?: string
+          mois?: string
+          salaire_brut?: number | null
+          salaire_net?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pay_slips_employe_id_fkey"
+            columns: ["employe_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_parameters: {
+        Row: {
+          created_at: string
+          date_application: string
+          id: string
+          taux_cnss: number
+          taux_cotisation_patronale: number
+          taux_ipres: number
+          taux_ir: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_application: string
+          id?: string
+          taux_cnss: number
+          taux_cotisation_patronale: number
+          taux_ipres: number
+          taux_ir: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_application?: string
+          id?: string
+          taux_cnss?: number
+          taux_cotisation_patronale?: number
+          taux_ipres?: number
+          taux_ir?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      salary_elements: {
+        Row: {
+          annee: number | null
+          cnss_salarie: number | null
+          contrat: string | null
+          created_at: string
+          emploi: string | null
+          employe_id: string
+          id: string
+          indemnite_transport: number | null
+          ipres_salarie: number | null
+          ir: number | null
+          mois: string | null
+          prime_anciennete: number | null
+          prime_logement: number | null
+          salaire_brut: number
+          salaire_net: number | null
+          situation_contrat: string | null
+          updated_at: string
+        }
+        Insert: {
+          annee?: number | null
+          cnss_salarie?: number | null
+          contrat?: string | null
+          created_at?: string
+          emploi?: string | null
+          employe_id: string
+          id?: string
+          indemnite_transport?: number | null
+          ipres_salarie?: number | null
+          ir?: number | null
+          mois?: string | null
+          prime_anciennete?: number | null
+          prime_logement?: number | null
+          salaire_brut: number
+          salaire_net?: number | null
+          situation_contrat?: string | null
+          updated_at?: string
+        }
+        Update: {
+          annee?: number | null
+          cnss_salarie?: number | null
+          contrat?: string | null
+          created_at?: string
+          emploi?: string | null
+          employe_id?: string
+          id?: string
+          indemnite_transport?: number | null
+          ipres_salarie?: number | null
+          ir?: number | null
+          mois?: string | null
+          prime_anciennete?: number | null
+          prime_logement?: number | null
+          salaire_brut?: number
+          salaire_net?: number | null
+          situation_contrat?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_elements_employe_id_fkey"
+            columns: ["employe_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_contributions: {
+        Row: {
+          annee: number
+          cnss_salarie: number | null
+          cotisation_patronale: number | null
+          created_at: string
+          employe_id: string
+          id: string
+          ipres_salarie: number | null
+          ir: number | null
+          mois: string
+          updated_at: string
+        }
+        Insert: {
+          annee: number
+          cnss_salarie?: number | null
+          cotisation_patronale?: number | null
+          created_at?: string
+          employe_id: string
+          id?: string
+          ipres_salarie?: number | null
+          ir?: number | null
+          mois: string
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          cnss_salarie?: number | null
+          cotisation_patronale?: number | null
+          created_at?: string
+          employe_id?: string
+          id?: string
+          ipres_salarie?: number | null
+          ir?: number | null
+          mois?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_contributions_employe_id_fkey"
+            columns: ["employe_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
