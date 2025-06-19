@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Download } from 'lucide-react';
+import { PaySlipGenerator } from './PaySlipGenerator';
 
 export const PaySlipList = () => {
   const { data: paySlips, isLoading } = useQuery({
@@ -29,6 +30,9 @@ export const PaySlipList = () => {
 
   return (
     <div className="space-y-6">
+      {/* Générateur de bulletins PDF */}
+      <PaySlipGenerator />
+
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <FileText className="h-6 w-6" />
@@ -36,9 +40,6 @@ export const PaySlipList = () => {
             {paySlips?.length || 0} bulletin(s) de paie
           </span>
         </div>
-        <Button>
-          Générer Bulletins
-        </Button>
       </div>
 
       <div className="grid gap-4">
@@ -57,10 +58,9 @@ export const PaySlipList = () => {
                     {paySlip.salaire_net?.toLocaleString()} FCFA
                   </p>
                 </div>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Télécharger
-                </Button>
+                <div className="text-sm text-gray-500">
+                  Matricule: {paySlip.employees?.matricule}
+                </div>
               </div>
             </CardContent>
           </Card>
