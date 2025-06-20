@@ -3,9 +3,9 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { AddEmployeeDialog } from './AddEmployeeDialog';
 
 export const EmployeeList = () => {
   const { data: employees, isLoading } = useQuery({
@@ -34,10 +34,7 @@ export const EmployeeList = () => {
             {employees?.length || 0} employé(s)
           </span>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Nouvel Employé
-        </Button>
+        <AddEmployeeDialog />
       </div>
 
       <div className="grid gap-4">
@@ -79,10 +76,7 @@ export const EmployeeList = () => {
               <p className="text-gray-600 mb-4">
                 Commencez par ajouter votre premier employé
               </p>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter un employé
-              </Button>
+              <AddEmployeeDialog />
             </CardContent>
           </Card>
         )}

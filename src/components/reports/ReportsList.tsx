@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { BarChart3, PieChart, TrendingUp, Users } from 'lucide-react';
+import { ReportGenerator } from './ReportGenerator';
 
 export const ReportsList = () => {
   const reports = [
@@ -10,25 +10,29 @@ export const ReportsList = () => {
       title: 'Rapport de Paie Mensuel',
       description: 'Synthèse des salaires du mois',
       icon: BarChart3,
-      color: 'text-blue-600'
+      color: 'text-blue-600',
+      type: 'monthly' as const
     },
     {
       title: 'Analyse des Coûts',
       description: 'Répartition des coûts par département',
       icon: PieChart,
-      color: 'text-green-600'
+      color: 'text-green-600',
+      type: 'costs' as const
     },
     {
       title: 'Évolution des Salaires',
       description: 'Tendances sur les 12 derniers mois',
       icon: TrendingUp,
-      color: 'text-purple-600'
+      color: 'text-purple-600',
+      type: 'evolution' as const
     },
     {
       title: 'Statistiques Employés',
       description: 'Effectifs et répartition',
       icon: Users,
-      color: 'text-orange-600'
+      color: 'text-orange-600',
+      type: 'statistics' as const
     }
   ];
 
@@ -44,9 +48,7 @@ export const ReportsList = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-gray-600">{report.description}</p>
-            <Button className="w-full">
-              Générer le Rapport
-            </Button>
+            <ReportGenerator reportType={report.type} title={report.title} />
           </CardContent>
         </Card>
       ))}

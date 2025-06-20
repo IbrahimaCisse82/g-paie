@@ -3,8 +3,8 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, FileText, Calendar } from 'lucide-react';
+import { FileText, Calendar } from 'lucide-react';
+import { AddConventionDialog } from './AddConventionDialog';
 
 export const ConventionsList = () => {
   const { data: conventions, isLoading } = useQuery({
@@ -30,10 +30,7 @@ export const ConventionsList = () => {
         <p className="text-gray-600">
           Gérez les conventions collectives de votre entreprise
         </p>
-        <Button className="flex items-center space-x-2">
-          <Plus className="h-4 w-4" />
-          <span>Nouvelle Convention</span>
-        </Button>
+        <AddConventionDialog />
       </div>
 
       <div className="grid gap-4">
@@ -67,10 +64,7 @@ export const ConventionsList = () => {
           <Card>
             <CardContent className="text-center py-8">
               <p className="text-gray-500 mb-4">Aucune convention collective trouvée</p>
-              <Button className="flex items-center space-x-2 mx-auto">
-                <Plus className="h-4 w-4" />
-                <span>Ajouter une convention</span>
-              </Button>
+              <AddConventionDialog />
             </CardContent>
           </Card>
         )}
