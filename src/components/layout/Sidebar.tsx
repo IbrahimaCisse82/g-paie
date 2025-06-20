@@ -21,7 +21,7 @@ interface SidebarProps {
 const menuItems = [
   { icon: Home, label: 'Dashboard', href: '/' },
   { icon: Users, label: 'Employés', href: '/employees' },
-  { icon: Building2, label: 'Conventions', href: '#conventions' },
+  { icon: Building2, label: 'Conventions', href: '/conventions' },
   { icon: Calculator, label: 'Calcul de Paie', href: '/payroll' },
   { icon: FileText, label: 'Bulletins de paie', href: '/payslips' },
   { icon: BarChart3, label: 'Rapports', href: '/reports' },
@@ -54,33 +54,18 @@ export const Sidebar = ({ isOpen }: SidebarProps) => {
             
             return (
               <li key={index}>
-                {item.href.startsWith('#') ? (
-                  <a
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700 hover:bg-gray-100"
-                    )}
-                  >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
-                    {isOpen && <span>{item.label}</span>}
-                  </a>
-                ) : (
-                  <Link
-                    to={item.href}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700 hover:bg-gray-100"
-                    )}
-                  >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
-                    {isOpen && <span>{item.label}</span>}
-                  </Link>
-                )}
+                <Link
+                  to={item.href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  {isOpen && <span>{item.label}</span>}
+                </Link>
               </li>
             );
           })}
