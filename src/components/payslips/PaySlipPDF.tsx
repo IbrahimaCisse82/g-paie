@@ -13,37 +13,52 @@ export const PaySlipPDF: React.FC<PaySlipPDFProps> = ({ paySlipId }) => {
   const { data: paySlipData } = useQuery({
     queryKey: ['paySlipDetails', paySlipId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Récupérer le bulletin de paie
+      const { data: paySlip, error: paySlipError } = await supabase
         .from('pay_slips')
-        .select(`
-          *,
-          employees!inner(
-            matricule,
-            prenom,
-            nom,
-            poste,
-            type_contrat,
-            date_entree,
-            statut
-          ),
-          salary_elements!inner(
-            salaire_brut,
-            cnss_salarie,
-            ipres_salarie,
-            ir,
-            prime_anciennete,
-            prime_logement,
-            indemnite_transport
-          ),
-          social_contributions!inner(
-            cotisation_patronale
-          )
-        `)
+        .select('*')
         .eq('id', paySlipId)
         .single();
       
-      if (error) throw error;
-      return data;
+      if (paySlipError) throw paySlipError;
+
+      // Récupérer l'employé
+      const { data: employee, error: employeeError } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('id', paySlip.employe_id)
+        .single();
+      
+      if (employeeError) throw employeeError;
+
+      // Récupérer les éléments de salaire
+      const { data: salaryElement, error: salaryError } = await supabase
+        .from('salary_elements')
+        .select('*')
+        .eq('employe_id', paySlip.employe_id)
+        .eq('mois', paySlip.mois)
+        .eq('annee', paySlip.annee)
+        .single();
+      
+      if (salaryError) throw salaryError;
+
+      // Récupérer les cotisations sociales
+      const { data: socialContrib, error: socialError } = await supabase
+        .from('social_contributions')
+        .select('*')
+        .eq('employe_id', paySlip.employe_id)
+        .eq('mois', paySlip.mois)
+        .eq('annee', paySlip.annee)
+        .single();
+      
+      if (socialError) throw socialError;
+
+      return {
+        paySlip,
+        employee,
+        salaryElement,
+        socialContrib
+      };
     },
   });
 
@@ -58,7 +73,7 @@ export const PaySlipPDF: React.FC<PaySlipPDFProps> = ({ paySlipId }) => {
           <!DOCTYPE html>
           <html>
             <head>
-              <title>Bulletin de Paie - ${paySlipData.employees.prenom} ${paySlipData.employees.nom}</title>
+              <title>Bulletin de Paie - ${paySlipData.employee.prenom} ${paySlipData.employee.nom}</title>
               <style>
                 body { font-family: Arial, sans-serif; margin: 20px; font-size: 12px; }
                 .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
@@ -92,9 +107,7 @@ export const PaySlipPDF: React.FC<PaySlipPDFProps> = ({ paySlipId }) => {
     return <div>Chargement...</div>;
   }
 
-  const employee = paySlipData.employees;
-  const salaryElement = paySlipData.salary_elements;
-  const socialContrib = paySlipData.social_contributions;
+  const { paySlip, employee, salaryElement, socialContrib } = paySlipData;
 
   // Calculs pour l'affichage
   const salaireBrut = Number(salaryElement.salaire_brut);
@@ -107,7 +120,7 @@ export const PaySlipPDF: React.FC<PaySlipPDFProps> = ({ paySlipId }) => {
   const cotisationPatronale = Number(socialContrib.cotisation_patronale);
 
   const totalCotisations = cnss + ipres;
-  const salaireNet = Number(paySlipData.salaire_net);
+  const salaireNet = Number(paySlip.salaire_net);
 
   return (
     <div className="space-y-4">
@@ -128,8 +141,8 @@ export const PaySlipPDF: React.FC<PaySlipPDFProps> = ({ paySlipId }) => {
           <div className="bulletin-header">
             <h2 className="text-xl font-bold">BULLETIN DE PAIE</h2>
             <div className="mt-4 text-sm">
-              <p>Période du 01/{String(new Date().getMonth() + 1).padStart(2, '0')}/{paySlipData.annee}</p>
-              <p>au 30/{String(new Date().getMonth() + 1).padStart(2, '0')}/{paySlipData.annee}</p>
+              <p>Période du 01/{String(new Date().getMonth() + 1).padStart(2, '0')}/{paySlip.annee}</p>
+              <p>au 30/{String(new Date().getMonth() + 1).padStart(2, '0')}/{paySlip.annee}</p>
               <p>Mode de paiement par chèque</p>
             </div>
           </div>
@@ -180,8 +193,8 @@ export const PaySlipPDF: React.FC<PaySlipPDFProps> = ({ paySlipId }) => {
               <th>Base</th>
               <th>Nombre</th>
               <th>Taux</th>
-              <th colspan="2">Part salarié</th>
-              <th colspan="2">Part patronale</th>
+              <th colSpan={2}>Part salarié</th>
+              <th colSpan={2}>Part patronale</th>
             </tr>
             <tr>
               <th></th>
@@ -235,7 +248,7 @@ export const PaySlipPDF: React.FC<PaySlipPDFProps> = ({ paySlipId }) => {
             )}
             
             <tr className="total-row">
-              <td colspan="5"><strong>Total brut</strong></td>
+              <td colSpan={5}><strong>Total brut</strong></td>
               <td><strong>{salaireBrut.toLocaleString()}</strong></td>
               <td></td>
               <td></td>
@@ -288,14 +301,14 @@ export const PaySlipPDF: React.FC<PaySlipPDFProps> = ({ paySlipId }) => {
             </tr>
             
             <tr className="total-row">
-              <td colspan="6"><strong>Total cotisations</strong></td>
+              <td colSpan={6}><strong>Total cotisations</strong></td>
               <td><strong>{totalCotisations.toLocaleString()}</strong></td>
               <td></td>
               <td><strong>{cotisationPatronale.toLocaleString()}</strong></td>
             </tr>
             
             <tr className="net-salary">
-              <td colspan="5"><strong>Rémunération Nette</strong></td>
+              <td colSpan={5}><strong>Rémunération Nette</strong></td>
               <td><strong>{salaireNet.toLocaleString()}</strong></td>
               <td></td>
               <td></td>
