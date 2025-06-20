@@ -21,7 +21,8 @@ export const AddEmployeeDialog = () => {
     matricule: '',
     poste: '',
     type_contrat: 'CDI',
-    statut: 'Actif'
+    statut: 'Actif',
+    sexe: 'M'
   });
 
   const addEmployeeMutation = useMutation({
@@ -48,7 +49,8 @@ export const AddEmployeeDialog = () => {
         matricule: '',
         poste: '',
         type_contrat: 'CDI',
-        statut: 'Actif'
+        statut: 'Actif',
+        sexe: 'M'
       });
     },
     onError: (error: Error) => {
@@ -106,6 +108,19 @@ export const AddEmployeeDialog = () => {
               onChange={(e) => setFormData(prev => ({...prev, matricule: e.target.value}))}
               required
             />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="sexe">Sexe *</Label>
+            <Select value={formData.sexe} onValueChange={(value) => setFormData(prev => ({...prev, sexe: value}))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="M">Masculin</SelectItem>
+                <SelectItem value="F">Féminin</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="space-y-2">
