@@ -38,61 +38,115 @@ export type Database = {
       }
       employees: {
         Row: {
+          adresse: string | null
           categorie: string | null
+          code_postal: string | null
+          contact_urgence_nom: string | null
+          contact_urgence_telephone: string | null
           convention_collective_id: string | null
           created_at: string
           date_entree: string | null
           date_naissance: string | null
           date_sortie: string | null
+          diplomes: string | null
+          email: string | null
           id: string
+          indemnite_transport: number | null
           lieu_naissance: string | null
           matricule: string
           nationalite: string | null
           nom: string
+          nombre_enfants: number | null
+          numero_cnss: string | null
+          numero_ipres: string | null
+          photo_url: string | null
           poste: string | null
           prenom: string
+          prime_anciennete_taux: number | null
+          rib: string | null
+          salaire_base: number | null
           sexe: string
+          situation_familiale: string | null
           statut: string
+          sur_salaire: number | null
+          telephone: string | null
           type_contrat: string
           updated_at: string
+          ville: string | null
         }
         Insert: {
+          adresse?: string | null
           categorie?: string | null
+          code_postal?: string | null
+          contact_urgence_nom?: string | null
+          contact_urgence_telephone?: string | null
           convention_collective_id?: string | null
           created_at?: string
           date_entree?: string | null
           date_naissance?: string | null
           date_sortie?: string | null
+          diplomes?: string | null
+          email?: string | null
           id?: string
+          indemnite_transport?: number | null
           lieu_naissance?: string | null
           matricule: string
           nationalite?: string | null
           nom: string
+          nombre_enfants?: number | null
+          numero_cnss?: string | null
+          numero_ipres?: string | null
+          photo_url?: string | null
           poste?: string | null
           prenom: string
+          prime_anciennete_taux?: number | null
+          rib?: string | null
+          salaire_base?: number | null
           sexe: string
+          situation_familiale?: string | null
           statut: string
+          sur_salaire?: number | null
+          telephone?: string | null
           type_contrat: string
           updated_at?: string
+          ville?: string | null
         }
         Update: {
+          adresse?: string | null
           categorie?: string | null
+          code_postal?: string | null
+          contact_urgence_nom?: string | null
+          contact_urgence_telephone?: string | null
           convention_collective_id?: string | null
           created_at?: string
           date_entree?: string | null
           date_naissance?: string | null
           date_sortie?: string | null
+          diplomes?: string | null
+          email?: string | null
           id?: string
+          indemnite_transport?: number | null
           lieu_naissance?: string | null
           matricule?: string
           nationalite?: string | null
           nom?: string
+          nombre_enfants?: number | null
+          numero_cnss?: string | null
+          numero_ipres?: string | null
+          photo_url?: string | null
           poste?: string | null
           prenom?: string
+          prime_anciennete_taux?: number | null
+          rib?: string | null
+          salaire_base?: number | null
           sexe?: string
+          situation_familiale?: string | null
           statut?: string
+          sur_salaire?: number | null
+          telephone?: string | null
           type_contrat?: string
           updated_at?: string
+          ville?: string | null
         }
         Relationships: [
           {

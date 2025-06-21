@@ -4,11 +4,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
+import { EmployeeDetailForm } from './EmployeeDetailForm';
 
 export const AddEmployeeDialog = () => {
   const { toast } = useToast();
@@ -19,17 +17,61 @@ export const AddEmployeeDialog = () => {
     nom: '',
     prenom: '',
     matricule: '',
+    sexe: 'M',
+    date_naissance: '',
+    lieu_naissance: '',
+    nationalite: '',
     poste: '',
     type_contrat: 'CDI',
     statut: 'Actif',
-    sexe: 'M'
+    date_entree: '',
+    date_sortie: '',
+    telephone: '',
+    email: '',
+    adresse: '',
+    ville: '',
+    code_postal: '',
+    situation_familiale: '',
+    nombre_enfants: 0,
+    numero_cnss: '',
+    numero_ipres: '',
+    salaire_base: 0,
+    sur_salaire: 0,
+    prime_anciennete_taux: 0,
+    indemnite_transport: 0,
+    diplomes: '',
+    contact_urgence_nom: '',
+    contact_urgence_telephone: '',
+    rib: ''
   });
 
   const addEmployeeMutation = useMutation({
     mutationFn: async () => {
+      // Préparer les données en convertissant les chaînes vides en null pour les champs optionnels
+      const dataToInsert = {
+        ...formData,
+        date_naissance: formData.date_naissance || null,
+        lieu_naissance: formData.lieu_naissance || null,
+        nationalite: formData.nationalite || null,
+        date_entree: formData.date_entree || null,
+        date_sortie: formData.date_sortie || null,
+        telephone: formData.telephone || null,
+        email: formData.email || null,
+        adresse: formData.adresse || null,
+        ville: formData.ville || null,
+        code_postal: formData.code_postal || null,
+        situation_familiale: formData.situation_familiale || null,
+        numero_cnss: formData.numero_cnss || null,
+        numero_ipres: formData.numero_ipres || null,
+        diplomes: formData.diplomes || null,
+        contact_urgence_nom: formData.contact_urgence_nom || null,
+        contact_urgence_telephone: formData.contact_urgence_telephone || null,
+        rib: formData.rib || null
+      };
+
       const { data, error } = await supabase
         .from('employees')
-        .insert([formData])
+        .insert([dataToInsert])
         .select()
         .single();
       
@@ -43,14 +85,37 @@ export const AddEmployeeDialog = () => {
       });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       setOpen(false);
+      // Reset form
       setFormData({
         nom: '',
         prenom: '',
         matricule: '',
+        sexe: 'M',
+        date_naissance: '',
+        lieu_naissance: '',
+        nationalite: '',
         poste: '',
         type_contrat: 'CDI',
         statut: 'Actif',
-        sexe: 'M'
+        date_entree: '',
+        date_sortie: '',
+        telephone: '',
+        email: '',
+        adresse: '',
+        ville: '',
+        code_postal: '',
+        situation_familiale: '',
+        nombre_enfants: 0,
+        numero_cnss: '',
+        numero_ipres: '',
+        salaire_base: 0,
+        sur_salaire: 0,
+        prime_anciennete_taux: 0,
+        indemnite_transport: 0,
+        diplomes: '',
+        contact_urgence_nom: '',
+        contact_urgence_telephone: '',
+        rib: ''
       });
     },
     onError: (error: Error) => {
@@ -75,77 +140,12 @@ export const AddEmployeeDialog = () => {
           Nouvel Employé
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Ajouter un nouvel employé</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="nom">Nom *</Label>
-            <Input
-              id="nom"
-              value={formData.nom}
-              onChange={(e) => setFormData(prev => ({...prev, nom: e.target.value}))}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="prenom">Prénom *</Label>
-            <Input
-              id="prenom"
-              value={formData.prenom}
-              onChange={(e) => setFormData(prev => ({...prev, prenom: e.target.value}))}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="matricule">Matricule *</Label>
-            <Input
-              id="matricule"
-              value={formData.matricule}
-              onChange={(e) => setFormData(prev => ({...prev, matricule: e.target.value}))}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="sexe">Sexe *</Label>
-            <Select value={formData.sexe} onValueChange={(value) => setFormData(prev => ({...prev, sexe: value}))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="M">Masculin</SelectItem>
-                <SelectItem value="F">Féminin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="poste">Poste</Label>
-            <Input
-              id="poste"
-              value={formData.poste}
-              onChange={(e) => setFormData(prev => ({...prev, poste: e.target.value}))}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="type_contrat">Type de contrat</Label>
-            <Select value={formData.type_contrat} onValueChange={(value) => setFormData(prev => ({...prev, type_contrat: value}))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="CDI">CDI</SelectItem>
-                <SelectItem value="CDD">CDD</SelectItem>
-                <SelectItem value="Stage">Stage</SelectItem>
-                <SelectItem value="Freelance">Freelance</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <EmployeeDetailForm formData={formData} setFormData={setFormData} />
           
           <Button type="submit" className="w-full" disabled={addEmployeeMutation.isPending}>
             {addEmployeeMutation.isPending ? 'Ajout en cours...' : 'Ajouter l\'employé'}
