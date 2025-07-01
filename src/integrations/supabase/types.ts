@@ -47,6 +47,7 @@ export type Database = {
           created_at: string
           date_entree: string | null
           date_naissance: string | null
+          date_retour_conge: string | null
           date_sortie: string | null
           diplomes: string | null
           email: string | null
@@ -54,6 +55,7 @@ export type Database = {
           indemnite_transport: number | null
           lieu_naissance: string | null
           matricule: string
+          motif_sortie: string | null
           nationalite: string | null
           nom: string
           nombre_enfants: number | null
@@ -84,6 +86,7 @@ export type Database = {
           created_at?: string
           date_entree?: string | null
           date_naissance?: string | null
+          date_retour_conge?: string | null
           date_sortie?: string | null
           diplomes?: string | null
           email?: string | null
@@ -91,6 +94,7 @@ export type Database = {
           indemnite_transport?: number | null
           lieu_naissance?: string | null
           matricule: string
+          motif_sortie?: string | null
           nationalite?: string | null
           nom: string
           nombre_enfants?: number | null
@@ -121,6 +125,7 @@ export type Database = {
           created_at?: string
           date_entree?: string | null
           date_naissance?: string | null
+          date_retour_conge?: string | null
           date_sortie?: string | null
           diplomes?: string | null
           email?: string | null
@@ -128,6 +133,7 @@ export type Database = {
           indemnite_transport?: number | null
           lieu_naissance?: string | null
           matricule?: string
+          motif_sortie?: string | null
           nationalite?: string | null
           nom?: string
           nombre_enfants?: number | null

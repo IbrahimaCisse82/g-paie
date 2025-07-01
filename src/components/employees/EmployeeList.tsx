@@ -2,8 +2,8 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Phone, Mail, MapPin, CreditCard } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Users, Phone, Mail, MapPin, Calendar, User, Briefcase } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AddEmployeeDialog } from './AddEmployeeDialog';
 
@@ -49,9 +49,11 @@ export const EmployeeList = () => {
                   <p className="text-gray-600">
                     Matricule: {employee.matricule}
                   </p>
-                  <p className="text-gray-600">
-                    Poste: {employee.poste || 'Non spécifié'}
-                  </p>
+                  {employee.poste && (
+                    <p className="text-gray-600">
+                      Poste: {employee.poste}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Badge variant={employee.statut === 'Actif' ? 'default' : 'secondary'}>
@@ -60,48 +62,70 @@ export const EmployeeList = () => {
                   <Badge variant="outline">
                     {employee.type_contrat}
                   </Badge>
+                  {employee.categorie && (
+                    <Badge variant="outline">
+                      {employee.categorie}
+                    </Badge>
+                  )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                {employee.telephone && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                {employee.sexe && (
                   <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4 text-gray-400" />
-                    <span>{employee.telephone}</span>
+                    <User className="h-4 w-4 text-gray-400" />
+                    <span>{employee.sexe === 'M' ? 'Masculin' : 'Féminin'}</span>
                   </div>
                 )}
-                
-                {employee.email && (
+
+                {employee.date_naissance && (
                   <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="truncate">{employee.email}</span>
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <span>{new Date(employee.date_naissance).toLocaleDateString()}</span>
                   </div>
                 )}
-                
-                {employee.ville && (
+
+                {employee.lieu_naissance && (
                   <div className="flex items-center space-x-2">
                     <MapPin className="h-4 w-4 text-gray-400" />
-                    <span>{employee.ville}</span>
+                    <span>{employee.lieu_naissance}</span>
                   </div>
                 )}
-                
-                {employee.salaire_base && employee.salaire_base > 0 && (
+
+                {employee.nationalite && (
                   <div className="flex items-center space-x-2">
-                    <CreditCard className="h-4 w-4 text-gray-400" />
-                    <span>{employee.salaire_base.toLocaleString()} FCFA</span>
+                    <Briefcase className="h-4 w-4 text-gray-400" />
+                    <span>{employee.nationalite}</span>
+                  </div>
+                )}
+
+                {employee.date_entree && (
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <span>Entrée: {new Date(employee.date_entree).toLocaleDateString()}</span>
+                  </div>
+                )}
+
+                {employee.date_sortie && (
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <span>Sortie: {new Date(employee.date_sortie).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
 
-              {(employee.situation_familiale || employee.nombre_enfants > 0) && (
+              {employee.motif_sortie && (
                 <div className="mt-4 pt-4 border-t">
-                  <div className="flex space-x-4 text-sm text-gray-600">
-                    {employee.situation_familiale && (
-                      <span>Situation: {employee.situation_familiale}</span>
-                    )}
-                    {employee.nombre_enfants > 0 && (
-                      <span>Enfants: {employee.nombre_enfants}</span>
-                    )}
+                  <div className="text-sm text-gray-600">
+                    <strong>Motif de sortie:</strong> {employee.motif_sortie}
+                  </div>
+                </div>
+              )}
+
+              {employee.date_retour_conge && (
+                <div className="mt-2">
+                  <div className="text-sm text-gray-600">
+                    <strong>Retour de congé:</strong> {new Date(employee.date_retour_conge).toLocaleDateString()}
                   </div>
                 </div>
               )}
