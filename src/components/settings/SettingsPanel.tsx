@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { recalculateAllSalaryElements } from '@/utils/payrollCalculations';
 import { Settings, Percent, Save } from 'lucide-react';
+import { CompanyInfoForm } from './CompanyInfoForm';
 
 export const SettingsPanel = () => {
   const { toast } = useToast();
@@ -113,6 +113,8 @@ export const SettingsPanel = () => {
 
   return (
     <div className="space-y-6">
+      <CompanyInfoForm />
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
