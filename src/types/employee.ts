@@ -16,6 +16,8 @@ export interface Salarie {
   dateFin?: Date;
   motifSortie?: string;
   dateRetourConge?: Date;
+  tauxHoraire?: number;
+  salaireBase?: number;
 }
 
 // Interface pour les données du formulaire (avec des strings pour les dates)
@@ -36,4 +38,18 @@ export interface SalarieFormData {
   dateFin?: string;
   motifSortie?: string;
   dateRetourConge?: string;
+  tauxHoraire?: number;
+  salaireBase?: number;
+}
+
+// Interface pour les catégories de convention collective
+export interface ConventionCategory {
+  id: string;
+  convention_collective: string;
+  categorie: string;
+  taux_horaire: number;
+  salaire_base: number;
+  statut: string;
+  created_at: string;
+  updated_at: string;
 }

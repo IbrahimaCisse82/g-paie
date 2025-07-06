@@ -1,10 +1,11 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { SalarieFormData } from '@/types/employee';
+import { useCompanyInfo } from '@/hooks/useCompanyInfo';
+import { useConventionCategories } from '@/hooks/useConventionCategories';
 
 interface EmployeeFormProps {
   onSubmit: (data: SalarieFormData) => void;
@@ -13,6 +14,9 @@ interface EmployeeFormProps {
 }
 
 export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormProps) => {
+  const { data: companyInfo } = useCompanyInfo();
+  const { data: categories } = useConventionCategories(companyInfo?.convention_collective);
+  
   const [formData, setFormData] = useState<SalarieFormData>({
     matricule: initialData?.matricule || '',
     prenom: initialData?.prenom || '',
@@ -30,6 +34,31 @@ export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormP
     motifSortie: initialData?.motifSortie || '',
     dateRetourConge: initialData?.dateRetourConge || ''
   });
+
+  // Mettre à jour automatiquement la convention collective de l'entreprise
+  useEffect(() => {
+    if (companyInfo?.convention_collective && !initialData?.conventionCollective) {
+      setFormData(prev => ({
+        ...prev,
+        conventionCollective: companyInfo.convention_collective
+      }));
+    }
+  }, [companyInfo, initialData]);
+
+  // Générer automatiquement les données salariales lors de la sélection de catégorie
+  const handleCategoryChange = (selectedCategory: string) => {
+    setFormData(prev => ({ ...prev, categorie: selectedCategory }));
+    
+    // Trouver les données de la catégorie sélectionnée
+    const categoryData = categories?.find(cat => cat.categorie === selectedCategory);
+    if (categoryData) {
+      console.log(`Catégorie ${selectedCategory} sélectionnée:`, {
+        taux_horaire: categoryData.taux_horaire,
+        salaire_base: categoryData.salaire_base,
+        statut: categoryData.statut
+      });
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,11 +80,18 @@ export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormP
         
         <div className="space-y-2">
           <Label htmlFor="categorie">Catégorie</Label>
-          <Input
-            id="categorie"
-            value={formData.categorie}
-            onChange={(e) => setFormData(prev => ({...prev, categorie: e.target.value}))}
-          />
+          <Select value={formData.categorie} onValueChange={handleCategoryChange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner une catégorie" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories?.map((category) => (
+                <SelectItem key={category.id} value={category.categorie}>
+                  {category.categorie} ({category.salaire_base.toLocaleString()} FCFA)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -166,7 +202,9 @@ export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormP
         <Input
           id="conventionCollective"
           value={formData.conventionCollective}
-          onChange={(e) => setFormData(prev => ({...prev, conventionCollective: e.target.value}))}
+          readOnly
+          className="bg-gray-100"
+          placeholder="Définie dans le profil de l'entreprise"
         />
       </div>
 
