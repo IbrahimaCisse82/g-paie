@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { SalarieFormData } from '@/types/employee';
 import { useCompanyInfo } from '@/hooks/useCompanyInfo';
 import { useConventionCategories } from '@/hooks/useConventionCategories';
+import { CategoryInfo } from './CategoryInfo';
 
 interface EmployeeFormProps {
   onSubmit: (data: SalarieFormData) => void;
@@ -32,7 +33,9 @@ export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormP
     dateEntree: initialData?.dateEntree || '',
     dateFin: initialData?.dateFin || '',
     motifSortie: initialData?.motifSortie || '',
-    dateRetourConge: initialData?.dateRetourConge || ''
+    dateRetourConge: initialData?.dateRetourConge || '',
+    tauxHoraire: initialData?.tauxHoraire || 0,
+    salaireBase: initialData?.salaireBase || 0
   });
 
   // Mettre à jour automatiquement la convention collective de l'entreprise
@@ -47,18 +50,30 @@ export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormP
 
   // Générer automatiquement les données salariales lors de la sélection de catégorie
   const handleCategoryChange = (selectedCategory: string) => {
-    setFormData(prev => ({ ...prev, categorie: selectedCategory }));
-    
     // Trouver les données de la catégorie sélectionnée
     const categoryData = categories?.find(cat => cat.categorie === selectedCategory);
+    
     if (categoryData) {
       console.log(`Catégorie ${selectedCategory} sélectionnée:`, {
         taux_horaire: categoryData.taux_horaire,
         salaire_base: categoryData.salaire_base,
         statut: categoryData.statut
       });
+      
+      setFormData(prev => ({
+        ...prev,
+        categorie: selectedCategory,
+        tauxHoraire: categoryData.taux_horaire,
+        salaireBase: categoryData.salaire_base,
+        statut: categoryData.statut
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, categorie: selectedCategory }));
     }
   };
+
+  // Obtenir les données de la catégorie sélectionnée pour l'affichage
+  const selectedCategoryData = categories?.find(cat => cat.categorie === formData.categorie);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +109,15 @@ export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormP
           </Select>
         </div>
       </div>
+
+      {/* Affichage des informations automatiques de la catégorie */}
+      {selectedCategoryData && (
+        <CategoryInfo 
+          tauxHoraire={selectedCategoryData.taux_horaire}
+          salaireBase={selectedCategoryData.salaire_base}
+          statut={selectedCategoryData.statut}
+        />
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
