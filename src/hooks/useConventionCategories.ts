@@ -1,5 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ConventionCategory {
   id: string;
@@ -12,54 +13,56 @@ export interface ConventionCategory {
   updated_at: string;
 }
 
-// Mock data for development - replace with real data once DB is set up
-const getMockCategories = (conventionCollective: string): ConventionCategory[] => {
-  const mockData: ConventionCategory[] = [
-    {
-      id: '1',
-      convention_collective: 'COMMERCE',
-      categorie: '1_er A',
-      taux_horaire: 407.927,
-      salaire_base: 70706,
-      statut: 'EMPLOYES',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: '2', 
-      convention_collective: 'COMMERCE',
-      categorie: '1_er B',
-      taux_horaire: 431.951,
-      salaire_base: 74870,
-      statut: 'EMPLOYES',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
-    {
-      id: '3',
-      convention_collective: 'COMMERCE', 
-      categorie: '7_ème A',
-      taux_horaire: 607.754,
-      salaire_base: 105342,
-      statut: 'Agents de maîtrise',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-  ];
-
-  return mockData.filter(cat => cat.convention_collective === conventionCollective);
-};
-
 export const useConventionCategories = (conventionCollective?: string) => {
   return useQuery({
     queryKey: ['conventionCategories', conventionCollective],
     queryFn: async (): Promise<ConventionCategory[]> => {
       if (!conventionCollective) return [];
       
-      // For now, return mock data while the database table is being set up
-      console.log('Using mock convention categories data');
-      return getMockCategories(conventionCollective);
+      try {
+        const { data, error } = await supabase
+          .from('convention_categories')
+          .select('*')
+          .eq('convention_collective', conventionCollective)
+          .order('salaire_base', { ascending: true });
+        
+        if (error) {
+          console.error('Error fetching convention categories:', error);
+          throw error;
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error('Failed to fetch convention categories:', error);
+        return [];
+      }
     },
     enabled: !!conventionCollective,
+  });
+};
+
+// Hook pour récupérer toutes les catégories (pour afficher le barème complet)
+export const useAllConventionCategories = () => {
+  return useQuery({
+    queryKey: ['allConventionCategories'],
+    queryFn: async (): Promise<ConventionCategory[]> => {
+      try {
+        const { data, error } = await supabase
+          .from('convention_categories')
+          .select('*')
+          .order('convention_collective', { ascending: true })
+          .order('salaire_base', { ascending: true });
+        
+        if (error) {
+          console.error('Error fetching all convention categories:', error);
+          throw error;
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error('Failed to fetch all convention categories:', error);
+        return [];
+      }
+    },
   });
 };
