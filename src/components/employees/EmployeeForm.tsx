@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { SalarieFormData } from '@/types/employee';
 import { useCompanyInfo } from '@/hooks/useCompanyInfo';
-import { useConventionCategories } from '@/hooks/useConventionCategories';
+import { useConventionCategories, ConventionCategory } from '@/hooks/useConventionCategories';
 import { CategoryInfo } from './CategoryInfo';
 
 interface EmployeeFormProps {
@@ -16,7 +16,7 @@ interface EmployeeFormProps {
 
 export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormProps) => {
   const { data: companyInfo } = useCompanyInfo();
-  const { data: categories } = useConventionCategories(companyInfo?.convention_collective);
+  const { data: categories = [] } = useConventionCategories(companyInfo?.convention_collective);
   
   const [formData, setFormData] = useState<SalarieFormData>({
     matricule: initialData?.matricule || '',
@@ -51,7 +51,7 @@ export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormP
   // Générer automatiquement les données salariales lors de la sélection de catégorie
   const handleCategoryChange = (selectedCategory: string) => {
     // Trouver les données de la catégorie sélectionnée
-    const categoryData = categories?.find(cat => cat.categorie === selectedCategory);
+    const categoryData = categories.find((cat: ConventionCategory) => cat.categorie === selectedCategory);
     
     if (categoryData) {
       console.log(`Catégorie ${selectedCategory} sélectionnée:`, {
@@ -73,7 +73,7 @@ export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormP
   };
 
   // Obtenir les données de la catégorie sélectionnée pour l'affichage
-  const selectedCategoryData = categories?.find(cat => cat.categorie === formData.categorie);
+  const selectedCategoryData = categories.find((cat: ConventionCategory) => cat.categorie === formData.categorie);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +100,7 @@ export const EmployeeForm = ({ onSubmit, initialData, isLoading }: EmployeeFormP
               <SelectValue placeholder="Sélectionner une catégorie" />
             </SelectTrigger>
             <SelectContent>
-              {categories?.map((category) => (
+              {categories.map((category: ConventionCategory) => (
                 <SelectItem key={category.id} value={category.categorie}>
                   {category.categorie} ({category.salaire_base.toLocaleString()} FCFA)
                 </SelectItem>
