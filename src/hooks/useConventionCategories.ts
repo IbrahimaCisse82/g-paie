@@ -1,6 +1,5 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 export interface ConventionCategory {
   id: string;
@@ -57,25 +56,9 @@ export const useConventionCategories = (conventionCollective?: string) => {
     queryFn: async (): Promise<ConventionCategory[]> => {
       if (!conventionCollective) return [];
       
-      // At this point, conventionCollective is guaranteed to be a string
-      const ccValue = conventionCollective as string;
-      
-      try {
-        // Try to use RPC function first
-        const { data, error } = await supabase.rpc('get_convention_categories', { 
-          p_convention_collective: ccValue 
-        });
-        
-        if (!error && data) {
-          return data;
-        }
-      } catch (rpcError) {
-        console.log('RPC function not available, using mock data');
-      }
-
       // For now, return mock data while the database table is being set up
       console.log('Using mock convention categories data');
-      return getMockCategories(ccValue);
+      return getMockCategories(conventionCollective);
     },
     enabled: !!conventionCollective,
   });
