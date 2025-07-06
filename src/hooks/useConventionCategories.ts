@@ -57,10 +57,13 @@ export const useConventionCategories = (conventionCollective?: string) => {
     queryFn: async (): Promise<ConventionCategory[]> => {
       if (!conventionCollective) return [];
       
+      // At this point, conventionCollective is guaranteed to be a string
+      const ccValue = conventionCollective as string;
+      
       try {
         // Try to use RPC function first
         const { data, error } = await supabase.rpc('get_convention_categories', { 
-          p_convention_collective: conventionCollective 
+          p_convention_collective: ccValue 
         });
         
         if (!error && data) {
@@ -72,7 +75,7 @@ export const useConventionCategories = (conventionCollective?: string) => {
 
       // For now, return mock data while the database table is being set up
       console.log('Using mock convention categories data');
-      return getMockCategories(conventionCollective);
+      return getMockCategories(ccValue);
     },
     enabled: !!conventionCollective,
   });
