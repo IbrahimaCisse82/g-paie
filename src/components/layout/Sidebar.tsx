@@ -33,16 +33,16 @@ export const Sidebar = ({ isOpen }: SidebarProps) => {
 
   return (
     <aside className={cn(
-      "fixed left-0 top-0 z-40 h-screen bg-white border-r border-gray-200 transition-all duration-300",
+      "fixed left-0 top-0 z-40 h-screen bg-white border-r border-gray-100 shadow-xl transition-all duration-300",
       isOpen ? "w-64" : "w-16"
     )}>
-      <div className="flex h-16 items-center justify-center border-b border-gray-200">
+      <div className="flex h-16 items-center justify-center border-b border-gray-100 bg-gradient-to-r from-blue-600 to-green-600">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-            <Building2 className="h-5 w-5 text-white" />
+          <div className="w-8 h-8 bg-white rounded flex items-center justify-center shadow-lg">
+            <Building2 className="h-5 w-5 bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent" />
           </div>
           {isOpen && (
-            <span className="font-bold text-lg text-gray-900">RH Manager</span>
+            <span className="font-bold text-lg text-white">RH Manager</span>
           )}
         </div>
       </div>
@@ -57,10 +57,10 @@ export const Sidebar = ({ isOpen }: SidebarProps) => {
                 <Link
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-gradient-to-r from-blue-500 to-green-500 text-white shadow-lg"
+                      : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-green-50 hover:text-blue-700"
                   )}
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />

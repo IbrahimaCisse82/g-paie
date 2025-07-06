@@ -15,7 +15,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
       <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-16'}`}>
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="p-6">
+        <main>
           {children}
         </main>
       </div>
