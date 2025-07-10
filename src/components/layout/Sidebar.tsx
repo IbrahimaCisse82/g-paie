@@ -25,6 +25,7 @@ const menuItems = [
   { icon: Calculator, label: 'Calcul de Paie', href: '/payroll' },
   { icon: FileText, label: 'Bulletins de paie', href: '/payslips' },
   { icon: BarChart3, label: 'Rapports', href: '/reports' },
+  { icon: Calculator, label: 'Simulateur de salaire', href: '/simulateur-salaire' },
   { icon: Settings, label: 'Paramètres', href: '/settings' },
 ];
 
