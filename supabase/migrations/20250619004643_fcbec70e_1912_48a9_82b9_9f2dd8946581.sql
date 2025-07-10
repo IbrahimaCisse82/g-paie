@@ -2,7 +2,7 @@
 -- Création des tables pour le système RH
 
 -- Table des conventions collectives
-CREATE TABLE public.conventions (
+CREATE TABLE IF NOT EXISTS public.conventions (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     intitule text NOT NULL,
     description text,

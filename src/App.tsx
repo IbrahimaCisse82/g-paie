@@ -11,6 +11,7 @@ import PayrollCalculation from "./pages/PayrollCalculation";
 import PaySlips from "./pages/PaySlips";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import NetSalarySimulator from "./pages/NetSalarySimulator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/payslips" element={<PaySlips />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/simulateur-salaire" element={<NetSalarySimulator />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
