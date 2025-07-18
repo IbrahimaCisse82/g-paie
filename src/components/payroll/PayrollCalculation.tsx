@@ -12,27 +12,16 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 
-import { PayrollService, validatePayrollCalculations } from '@/lib/payroll-service';
-import type { Employee, Payroll, PayrollCalculationResult } from '@/types/payroll';
+import { PayrollService, validatePayrollCalculations } from '@/lib/payroll-service-v2';
+import { MONTHS, formatCurrency, generateYears } from '@/constants/payroll';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { useLoading } from '@/hooks/useLoading';
+import type { EmployeeMetier as Employee, PayrollMetier as Payroll, PayrollCalculationResult } from '@/lib/payroll-service-v2';
 
-// Mois de l'année
-const MOIS = [
-  { value: 1, label: 'Janvier' },
-  { value: 2, label: 'Février' },
-  { value: 3, label: 'Mars' },
-  { value: 4, label: 'Avril' },
-  { value: 5, label: 'Mai' },
-  { value: 6, label: 'Juin' },
-  { value: 7, label: 'Juillet' },
-  { value: 8, label: 'Août' },
-  { value: 9, label: 'Septembre' },
-  { value: 10, label: 'Octobre' },
-  { value: 11, label: 'Novembre' },
-  { value: 12, label: 'Décembre' }
-];
+// Mois de l'année (supprimés car importés depuis constants)
 
 // Ajout de la fonction de vérification
-async function handleValidatePayroll(payroll: Payroll, setLoading: (b: boolean) => void) {
+async function handleValidatePayroll(payroll: Payroll, setLoading: (loading: boolean) => void) {
   setLoading(true);
   try {
     const attendu = payroll.salaire_net;
@@ -40,7 +29,7 @@ async function handleValidatePayroll(payroll: Payroll, setLoading: (b: boolean) 
     if (result.ok) {
       toast.success(`✅ Calcul conforme : aucun écart détecté (≤ 1 FCFA) pour ${payroll.employe_id}`);
     } else {
-      toast.error(`❌ Écart détecté pour ${payroll.employe_id} : ${result.message || 'Erreur inconnue'}`);
+      toast.error(`❌ Écart détecté pour ${payroll.employe_id} : ${result.ecart} FCFA`);
     }
   } catch (error) {
     toast.error('Erreur lors de la vérification');
@@ -51,7 +40,7 @@ async function handleValidatePayroll(payroll: Payroll, setLoading: (b: boolean) 
 }
 
 // Fonction pour vérifier tous les calculs du mois
-async function handleValidateAllPayrolls(payrolls: Payroll[], setLoading: (b: boolean) => void) {
+async function handleValidateAllPayrolls(payrolls: Payroll[], setLoading: (loading: boolean) => void) {
   setLoading(true);
   let ok = 0, ko = 0, details: string[] = [];
   for (const payroll of payrolls) {
@@ -61,7 +50,7 @@ async function handleValidateAllPayrolls(payrolls: Payroll[], setLoading: (b: bo
       ok++;
     } else {
       ko++;
-      details.push(`${payroll.employe_id}: ${result.message}`);
+      details.push(`${payroll.employe_id}: ${result.ecart} FCFA`);
     }
   }
   setLoading(false);
@@ -75,13 +64,19 @@ async function handleValidateAllPayrolls(payrolls: Payroll[], setLoading: (b: bo
 export function PayrollCalculation() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [payrolls, setPayrolls] = useState<Payroll[]>([]);
-  const [loading, setLoading] = useState(false);
   const [calculating, setCalculating] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedEmployee, setSelectedEmployee] = useState<string>('');
   const [calculationDetails, setCalculationDetails] = useState<PayrollCalculationResult | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  
+  // Hooks personnalisés
+  const { executeWithErrorHandling } = useErrorHandler();
+  const { isLoading, setLoading } = useLoading();
+  
+  // Génération des années disponibles
+  const availableYears = generateYears();
 
   // Charger les employés
   useEffect(() => {
@@ -94,27 +89,18 @@ export function PayrollCalculation() {
   }, [selectedMonth, selectedYear]);
 
   const loadEmployees = async () => {
-    try {
-      const data = await PayrollService.getEmployees({ statut: 'Actif' });
+    await executeWithErrorHandling(async () => {
+      const data = await PayrollService.getEmployees();
       setEmployees(data);
-    } catch (error) {
-      toast.error('Erreur lors du chargement des employés');
-      console.error(error);
-    }
+    });
   };
 
   const loadPayrolls = async () => {
-    try {
-      setLoading(true);
-      // Ici nous devrions avoir une méthode pour récupérer toutes les paies d'une période
-      // Pour l'instant, nous allons calculer individuellement
-      setPayrolls([]);
-    } catch (error) {
-      toast.error('Erreur lors du chargement des paies');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    await executeWithErrorHandling(async () => {
+      setLoading('payrolls', true);
+      const data = await PayrollService.getPayrollCalculations(selectedMonth, selectedYear);
+      setPayrolls(data);
+    });
   };
 
   // Calculer la paie pour tous les employés
@@ -125,12 +111,11 @@ export function PayrollCalculation() {
       const results: Payroll[] = [];
 
       for (const employee of activeEmployees) {
-        const result = await PayrollService.calculatePayroll({
-          employe_id: employee.id,
-          mois: selectedMonth,
-          annee: selectedYear,
-          include_pay_items: true
-        });
+        const result = await PayrollService.calculatePayroll(
+          employee.id,
+          selectedMonth,
+          selectedYear
+        );
 
         if (result.success && result.payroll) {
           results.push(result.payroll);
@@ -150,12 +135,11 @@ export function PayrollCalculation() {
   // Calculer la paie pour un employé spécifique
   const calculateEmployeePayroll = async (employeeId: string) => {
     try {
-      const result = await PayrollService.calculatePayroll({
-        employe_id: employeeId,
-        mois: selectedMonth,
-        annee: selectedYear,
-        include_pay_items: true
-      });
+      const result = await PayrollService.calculatePayroll(
+        employeeId,
+        selectedMonth,
+        selectedYear
+      );
 
       if (result.success && result.payroll) {
         setCalculationDetails(result);
@@ -176,10 +160,7 @@ export function PayrollCalculation() {
   // Valider une paie
   const validatePayroll = async (payrollId: string) => {
     try {
-      await PayrollService.updatePayroll(payrollId, { 
-        statut: 'Validé',
-        date_validation: new Date().toISOString()
-      });
+      await PayrollService.validatePayroll(payrollId);
       toast.success('Paie validée avec succès');
       loadPayrolls();
     } catch (error) {
@@ -191,10 +172,7 @@ export function PayrollCalculation() {
   // Marquer comme payé
   const markAsPaid = async (payrollId: string) => {
     try {
-      await PayrollService.updatePayroll(payrollId, { 
-        statut: 'Payé',
-        date_paiement: new Date().toISOString()
-      });
+      await PayrollService.validatePayroll(payrollId);
       toast.success('Paie marquée comme payée');
       loadPayrolls();
     } catch (error) {
@@ -271,7 +249,7 @@ export function PayrollCalculation() {
                   <SelectValue placeholder="Sélectionner le mois" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MOIS.map(mois => (
+                  {MONTHS.map(mois => (
                     <SelectItem key={mois.value} value={mois.value.toString()}>
                       {mois.label}
                     </SelectItem>
@@ -396,8 +374,8 @@ export function PayrollCalculation() {
       <div className="flex justify-end mb-4">
         <Button
           variant="default"
-          onClick={() => handleValidateAllPayrolls(payrolls, setLoading)}
-          disabled={payrolls.length === 0 || loading}
+          onClick={() => handleValidateAllPayrolls(payrolls, (loading) => setLoading('validateAll', loading))}
+          disabled={payrolls.length === 0 || isLoading('validateAll')}
         >
           <ShieldCheck className="h-4 w-4 mr-2" />
           Vérifier tous les calculs du mois
@@ -409,11 +387,11 @@ export function PayrollCalculation() {
         <CardHeader>
           <CardTitle>Paies calculées</CardTitle>
           <CardDescription>
-            {MOIS.find(m => m.value === selectedMonth)?.label} {selectedYear}
+            {MONTHS.find(m => m.value === selectedMonth)?.label} {selectedYear}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {isLoading('validateAll') ? (
             <div className="text-center py-8">Chargement...</div>
           ) : payrolls.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -488,7 +466,7 @@ export function PayrollCalculation() {
                           size="sm"
                           variant="outline"
                           title="Vérifier le calcul"
-                          onClick={() => handleValidatePayroll(payroll, setLoading)}
+                          onClick={() => handleValidatePayroll(payroll, (loading) => setLoading(`validate_${payroll.id}`, loading))}
                         >
                           <ShieldCheck className="h-4 w-4 text-blue-600" />
                         </Button>
@@ -527,7 +505,7 @@ export function PayrollCalculation() {
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Période</Label>
-                      <p>{MOIS.find(m => m.value === selectedMonth)?.label} {selectedYear}</p>
+                      <p>{MONTHS.find(m => m.value === selectedMonth)?.label} {selectedYear}</p>
                     </div>
                     <div>
                       <Label className="text-sm font-medium">Salaire de base</Label>
@@ -629,7 +607,7 @@ export function PayrollCalculation() {
                 <div className="flex justify-end mt-4">
                   <Button
                     variant="outline"
-                    onClick={() => handleValidatePayroll(calculationDetails.payroll, setLoading)}
+                    onClick={() => handleValidatePayroll(calculationDetails.payroll, (loading) => setLoading(`validate_${calculationDetails.payroll.id}`, loading))}
                     title="Vérifier le calcul"
                   >
                     <ShieldCheck className="h-4 w-4 text-blue-600 mr-2" />

@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 
 import { PayrollService } from '@/lib/payroll-service';
+import { MONTHS, PAY_ITEM_TYPES, formatCurrency, generateYears } from '@/constants/payroll';
 import type { Employee, PayItem, PayItemFormData } from '@/types/payroll';
 
 // Schéma de validation pour les éléments de paie
@@ -32,32 +33,8 @@ const payItemSchema = z.object({
 
 type PayItemFormSchema = z.infer<typeof payItemSchema>;
 
-// Types d'éléments de paie
-const PAY_ITEM_TYPES = [
-  { value: 'HEURES_SUPPLEMENTAIRES', label: 'Heures supplémentaires' },
-  { value: 'ABSENCES', label: 'Absences' },
-  { value: 'PRIMES', label: 'Primes' },
-  { value: 'INDEMNITES', label: 'Indemnités' },
-  { value: 'RETENUES', label: 'Retenues' },
-  { value: 'AVANCES', label: 'Avances' },
-  { value: 'AUTRES', label: 'Autres' }
-];
-
-// Mois de l'année
-const MOIS = [
-  { value: 1, label: 'Janvier' },
-  { value: 2, label: 'Février' },
-  { value: 3, label: 'Mars' },
-  { value: 4, label: 'Avril' },
-  { value: 5, label: 'Mai' },
-  { value: 6, label: 'Juin' },
-  { value: 7, label: 'Juillet' },
-  { value: 8, label: 'Août' },
-  { value: 9, label: 'Septembre' },
-  { value: 10, label: 'Octobre' },
-  { value: 11, label: 'Novembre' },
-  { value: 12, label: 'Décembre' }
-];
+// Types d'éléments de paie (supprimés car importés depuis constants)
+// Mois de l'année (supprimés car importés depuis constants)
 
 export function PayItemsManagement() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -68,6 +45,9 @@ export function PayItemsManagement() {
   const [selectedEmployee, setSelectedEmployee] = useState<string>('');
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  
+  // Génération des années disponibles
+  const availableYears = generateYears();
 
   const {
     register,
@@ -262,9 +242,9 @@ export function PayItemsManagement() {
                   <SelectValue placeholder="Sélectionner le mois" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MOIS.map(mois => (
-                    <SelectItem key={mois.value} value={mois.value.toString()}>
-                      {mois.label}
+                  {MONTHS.map(month => (
+                    <SelectItem key={month.value} value={month.value.toString()}>
+                      {month.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -278,7 +258,7 @@ export function PayItemsManagement() {
                   <SelectValue placeholder="Sélectionner l'année" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                  {availableYears.map(year => (
                     <SelectItem key={year} value={year.toString()}>
                       {year}
                     </SelectItem>
@@ -329,7 +309,7 @@ export function PayItemsManagement() {
             Éléments de paie - {selectedEmployee ? getEmployeeName(selectedEmployee) : 'Aucun employé sélectionné'}
           </CardTitle>
           <CardDescription>
-            {MOIS.find(m => m.value === selectedMonth)?.label} {selectedYear}
+            {MONTHS.find(m => m.value === selectedMonth)?.label} {selectedYear}
           </CardDescription>
         </CardHeader>
         <CardContent>

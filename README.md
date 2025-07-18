@@ -1,73 +1,197 @@
-# Welcome to your Lovable project
+# G-Paie - Application de Gestion de Paie
 
-## Project info
+## 📋 Description
 
-**URL**: https://lovable.dev/projects/7f25bfa5-5bf5-4e6e-8ed2-320f20dd545c
+G-Paie est une application web moderne de gestion de paie développée pour les entreprises sénégalaises. Elle permet de gérer facilement les employés, calculer les salaires selon les conventions collectives locales, et générer les bulletins de paie conformément à la législation sénégalaise.
 
-## How can I edit this code?
+## 🚀 Fonctionnalités
 
-There are several ways of editing your application.
+### 👥 Gestion des Employés
+- Ajout, modification et suppression d'employés
+- Gestion des informations personnelles et professionnelles
+- Suivi des contrats et statuts
+- Catégorisation selon les conventions collectives
 
-**Use Lovable**
+### 💰 Calcul de Paie
+- Calcul automatique des salaires selon les barèmes
+- Gestion des heures supplémentaires
+- Calcul des cotisations sociales (CNSS, IPRES, IR)
+- Primes et indemnités
+- Validation des calculs avec vérification automatique
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7f25bfa5-5bf5-4e6e-8ed2-320f20dd545c) and start prompting.
+### 📊 Bulletins de Paie
+- Génération automatique des bulletins
+- Export PDF personnalisé
+- Envoi par email
+- Historique des bulletins
 
-Changes made via Lovable will be committed automatically to this repo.
+### 📈 Rapports et Statistiques
+- Livre de paie mensuel
+- Récapitulatif des cotisations
+- États CNSS, IPRES et IR
+- Statistiques de masse salariale
 
-**Use your preferred IDE**
+### ⚙️ Paramétrage
+- Configuration des conventions collectives
+- Gestion des taux de cotisation
+- Paramètres de l'entreprise
+- Barèmes et grilles salariales
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Technologies Utilisées
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **UI Framework**: Tailwind CSS + shadcn/ui
+- **State Management**: React Query (TanStack Query)
+- **Backend**: Supabase (BaaS)
+- **Database**: PostgreSQL
+- **Validation**: Zod
+- **Routing**: React Router DOM
+- **Notifications**: Sonner
+- **Charts**: Recharts
+- **Forms**: React Hook Form
 
-Follow these steps:
+## 📦 Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### Prérequis
+- Node.js (version 18 ou supérieure)
+- npm ou yarn
+- Compte Supabase
+
+### Configuration
+
+1. **Cloner le repository**
+```bash
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+cd g-paie-1
 ```
 
-**Edit a file directly in GitHub**
+2. **Installer les dépendances**
+```bash
+npm install
+# ou
+yarn install
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. **Configuration de l'environnement**
+Créer un fichier `.env` à la racine du projet :
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-**Use GitHub Codespaces**
+4. **Configuration Supabase**
+- Créer un nouveau projet Supabase
+- Exécuter les migrations SQL depuis le dossier `supabase/migrations/`
+- Configurer les variables d'environnement
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Démarrage
 
-## What technologies are used for this project?
+```bash
+npm run dev
+# ou
+yarn dev
+```
 
-This project is built with:
+L'application sera disponible sur `http://localhost:8080`
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🏗️ Architecture
 
-## How can I deploy this project?
+### Structure du Projet
 
-Simply open [Lovable](https://lovable.dev/projects/7f25bfa5-5bf5-4e6e-8ed2-320f20dd545c) and click on Share -> Publish.
+```
+src/
+├── components/          # Composants réutilisables
+│   ├── ui/             # Composants UI de base (shadcn/ui)
+│   ├── layout/         # Composants de mise en page
+│   ├── employees/      # Composants gestion employés
+│   ├── payroll/        # Composants gestion paie
+│   └── reports/        # Composants rapports
+├── constants/          # Constantes et configurations
+├── hooks/             # Hooks personnalisés
+├── lib/               # Utilitaires et services
+├── pages/             # Pages principales
+├── types/             # Définitions TypeScript
+└── utils/             # Fonctions utilitaires
+```
 
-## Can I connect a custom domain to my Lovable project?
+### Hooks Personnalisés
 
-Yes, you can!
+- `useErrorHandler`: Gestion centralisée des erreurs
+- `useLoading`: Gestion des états de chargement
+- `usePagination`: Pagination des données
+- `useCompanyInfo`: Informations de l'entreprise
+- `useConventionCategories`: Catégories des conventions
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Services
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- `PayrollService`: Service principal pour les calculs de paie
+- `supabase`: Configuration et utilitaires Supabase
+- `payrollCalculations`: Fonctions de calcul avancées
+
+## 📊 Base de Données
+
+### Tables Principales
+
+- `employees`: Informations des employés
+- `company_info`: Informations de l'entreprise
+- `conventions`: Conventions collectives
+- `payroll_parameters`: Paramètres de paie
+- `salary_elements`: Éléments de salaire calculés
+- `pay_slips`: Bulletins de paie
+- `social_contributions`: Cotisations sociales
+
+## 🔧 Scripts Disponibles
+
+- `npm run dev`: Démarrage en mode développement
+- `npm run build`: Build de production
+- `npm run preview`: Aperçu du build
+- `npm run lint`: Vérification du code
+
+## 🎨 Personnalisation
+
+### Thèmes
+L'application utilise un système de thèmes avec CSS variables et Tailwind CSS.
+
+### Composants
+Les composants UI sont basés sur shadcn/ui et entièrement personnalisables.
+
+## 📝 Contribution
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📄 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## 🔒 Sécurité
+
+- Authentification via Supabase Auth
+- Validation des données côté client et serveur
+- Gestion sécurisée des permissions
+- Chiffrement des données sensibles
+
+## 🌍 Localisation
+
+L'application est développée en français et adaptée aux spécificités du Sénégal :
+- Conventions collectives sénégalaises
+- Calculs selon la législation locale
+- Formats de dates et devises (FCFA)
+
+## 📞 Support
+
+Pour toute question ou problème :
+- Créer une issue sur GitHub
+- Contacter l'équipe de développement
+
+## 🔄 Changelog
+
+Voir le fichier `CHANGELOG.md` pour l'historique des versions.
+
+---
+
+Développé avec ❤️ pour la gestion de paie au Sénégal

@@ -12,32 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 
 import { PayrollService } from '@/lib/payroll-service';
+import { MONTHS, REPORT_TYPES, formatCurrency, generateYears } from '@/constants/payroll';
 import type { Employee, Payroll, PayrollStatistics } from '@/types/payroll';
-
-// Mois de l'année
-const MOIS = [
-  { value: 1, label: 'Janvier' },
-  { value: 2, label: 'Février' },
-  { value: 3, label: 'Mars' },
-  { value: 4, label: 'Avril' },
-  { value: 5, label: 'Mai' },
-  { value: 6, label: 'Juin' },
-  { value: 7, label: 'Juillet' },
-  { value: 8, label: 'Août' },
-  { value: 9, label: 'Septembre' },
-  { value: 10, label: 'Octobre' },
-  { value: 11, label: 'Novembre' },
-  { value: 12, label: 'Décembre' }
-];
-
-// Types de rapports
-const REPORT_TYPES = [
-  { value: 'LIVRE_PAIE', label: 'Livre de paie', icon: FileText },
-  { value: 'RECAPITULATIF_COTISATIONS', label: 'Récapitulatif des cotisations', icon: BarChart3 },
-  { value: 'ETAT_CNSS', label: 'État CNSS', icon: FileText },
-  { value: 'ETAT_IPRES', label: 'État IPRES', icon: FileText },
-  { value: 'ETAT_IR', label: 'État IR', icon: FileText }
-];
 
 export function PayrollReports() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -48,6 +24,9 @@ export function PayrollReports() {
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedReportType, setSelectedReportType] = useState<string>('LIVRE_PAIE');
+  
+  // Génération des années disponibles
+  const availableYears = generateYears(-5, 2);
 
   // Charger les données
   useEffect(() => {
@@ -98,7 +77,7 @@ export function PayrollReports() {
   // Télécharger un rapport
   const downloadReport = (reportType: string) => {
     const reportName = REPORT_TYPES.find(t => t.value === reportType)?.label;
-    const fileName = `${reportName}_${MOIS.find(m => m.value === selectedMonth)?.label}_${selectedYear}.pdf`;
+    const fileName = `${reportName}_${MONTHS.find(m => m.value === selectedMonth)?.label}_${selectedYear}.pdf`;
     
     // Simulation de téléchargement
     const link = document.createElement('a');
@@ -154,9 +133,9 @@ export function PayrollReports() {
                   <SelectValue placeholder="Sélectionner le mois" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MOIS.map(mois => (
-                    <SelectItem key={mois.value} value={mois.value.toString()}>
-                      {mois.label}
+                  {MONTHS.map(month => (
+                    <SelectItem key={month.value} value={month.value.toString()}>
+                      {month.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -170,7 +149,7 @@ export function PayrollReports() {
                   <SelectValue placeholder="Sélectionner l'année" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+                  {availableYears.map(year => (
                     <SelectItem key={year} value={year.toString()}>
                       {year}
                     </SelectItem>
@@ -284,7 +263,7 @@ export function PayrollReports() {
         <TabsContent value="livre-paie" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Livre de paie - {MOIS.find(m => m.value === selectedMonth)?.label} {selectedYear}</CardTitle>
+              <CardTitle>Livre de paie - {MONTHS.find(m => m.value === selectedMonth)?.label} {selectedYear}</CardTitle>
               <CardDescription>
                 Vue consolidée de toutes les paies du mois
               </CardDescription>

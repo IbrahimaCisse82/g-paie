@@ -8,9 +8,12 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-background text-foreground",
-        destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+        default: "bg-white border-gray-200 text-gray-900",
+        destructive: "border-red-200 bg-red-50 text-red-800 [&>svg]:text-red-600",
+        success: "border-green-200 bg-green-50 text-green-800 [&>svg]:text-green-600",
+        warning: "border-yellow-200 bg-yellow-50 text-yellow-800 [&>svg]:text-yellow-600",
+        info: "border-blue-200 bg-blue-50 text-blue-800 [&>svg]:text-blue-600",
+        accent: "border-orange-200 bg-orange-50 text-orange-800 [&>svg]:text-orange-600",
       },
     },
     defaultVariants: {
@@ -56,4 +59,4 @@ const AlertDescription = React.forwardRef<
 ))
 AlertDescription.displayName = "AlertDescription"
 
-export { Alert, AlertTitle, AlertDescription }
+export { Alert, AlertTitle, AlertDescription, alertVariants }

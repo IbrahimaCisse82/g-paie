@@ -1,4 +1,5 @@
-import { supabase } from './supabase';
+import { supabase, handleSupabaseError } from './supabase';
+import { CALCULATION_UTILS } from '@/constants/payroll';
 import type {
   Employee,
   Payroll,
@@ -11,153 +12,379 @@ import type {
   PayrollFilters
 } from '../types/payroll';
 
+/**
+ * Service principal pour la gestion de la paie
+ * Amélioration avec gestion d'erreurs, cache et optimisations
+ */
 export class PayrollService {
+  private static cache = new Map<string, { data: any; timestamp: number }>();
+  private static readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+  // ===== UTILITAIRES PRIVÉS =====
+  
+  /**
+   * Gestion du cache
+   */
+  private static getCached<T>(key: string): T | null {
+    const cached = this.cache.get(key);
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      return cached.data as T;
+    }
+    this.cache.delete(key);
+    return null;
+  }
+
+  private static setCache<T>(key: string, data: T): void {
+    this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  private static clearCache(pattern?: string): void {
+    if (pattern) {
+      Array.from(this.cache.keys())
+        .filter(key => key.includes(pattern))
+        .forEach(key => this.cache.delete(key));
+    } else {
+      this.cache.clear();
+    }
+  }
+
+  /**
+   * Validation des données d'employé
+   */
+  private static validateEmployee(employee: Partial<Employee>): string[] {
+    const errors: string[] = [];
+    
+    if (!employee.nom || employee.nom.trim().length < 2) {
+      errors.push('Le nom doit contenir au moins 2 caractères');
+    }
+    
+    if (!employee.prenom || employee.prenom.trim().length < 2) {
+      errors.push('Le prénom doit contenir au moins 2 caractères');
+    }
+    
+    if (!employee.matricule || employee.matricule.trim().length < 1) {
+      errors.push('Le matricule est requis');
+    }
+    
+    if (employee.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(employee.email)) {
+      errors.push('L\'email n\'est pas valide');
+    }
+    
+    if (employee.salaire_base && !CALCULATION_UTILS.isValidSalary(employee.salaire_base)) {
+      errors.push('Le salaire de base n\'est pas valide');
+    }
+    
+    return errors;
+  }
+
   // ===== GESTION DES EMPLOYÉS =====
   
   /**
    * Récupère tous les employés avec filtres optionnels
    */
   static async getEmployees(filters?: EmployeeFilters): Promise<Employee[]> {
-    let query = supabase
-      .from('employees')
-      .select('*')
-      .order('nom', { ascending: true });
-
-    if (filters) {
-      if (filters.statut) {
-        query = query.eq('statut', filters.statut);
-      }
-      if (filters.convention_collective) {
-        query = query.eq('convention_collective', filters.convention_collective);
-      }
-      if (filters.categorie) {
-        query = query.eq('categorie', filters.categorie);
-      }
-      if (filters.type_contrat) {
-        query = query.eq('type_contrat', filters.type_contrat);
-      }
-      if (filters.search) {
-        query = query.or(`nom.ilike.%${filters.search}%,prenom.ilike.%${filters.search}%,matricule.ilike.%${filters.search}%`);
-      }
+    const cacheKey = `employees_${JSON.stringify(filters)}`;
+    const cached = this.getCached<Employee[]>(cacheKey);
+    
+    if (cached) {
+      return cached;
     }
 
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
+    try {
+      let query = supabase
+        .from('employees')
+        .select('*')
+        .order('nom', { ascending: true });
+
+      if (filters) {
+        if (filters.statut) {
+          query = query.eq('statut', filters.statut);
+        }
+        if (filters.convention_collective) {
+          query = query.eq('convention_collective', filters.convention_collective);
+        }
+        if (filters.categorie) {
+          query = query.eq('categorie', filters.categorie);
+        }
+        if (filters.type_contrat) {
+          query = query.eq('type_contrat', filters.type_contrat);
+        }
+        if (filters.search) {
+          query = query.or(`nom.ilike.%${filters.search}%,prenom.ilike.%${filters.search}%,matricule.ilike.%${filters.search}%`);
+        }
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        throw new Error(handleSupabaseError(error));
+      }
+
+      const employees = data || [];
+      this.setCache(cacheKey, employees);
+      return employees;
+    } catch (error) {
+      throw new Error(`Erreur lors de la récupération des employés: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   /**
    * Récupère un employé par son ID
    */
   static async getEmployee(id: string): Promise<Employee | null> {
-    const { data, error } = await supabase
-      .from('employees')
-      .select('*')
-      .eq('id', id)
-      .single();
+    if (!id) throw new Error('ID employé requis');
+    
+    const cacheKey = `employee_${id}`;
+    const cached = this.getCached<Employee>(cacheKey);
+    
+    if (cached) {
+      return cached;
+    }
 
-    if (error) throw error;
-    return data;
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw new Error(handleSupabaseError(error));
+      }
+
+      if (data) {
+        this.setCache(cacheKey, data);
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(`Erreur lors de la récupération de l'employé: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   /**
-   * Crée un nouvel employé
+   * Crée un nouvel employé avec validation
    */
   static async createEmployee(employee: Omit<Employee, 'id' | 'created_at' | 'updated_at'>): Promise<Employee> {
-    const { data, error } = await supabase
-      .from('employees')
-      .insert(employee)
-      .select()
-      .single();
+    // Validation des données
+    const validationErrors = this.validateEmployee(employee);
+    if (validationErrors.length > 0) {
+      throw new Error(`Données invalides: ${validationErrors.join(', ')}`);
+    }
 
-    if (error) throw error;
-    return data;
+    // Vérification de l'unicité du matricule
+    const { data: existingEmployee, error: checkError } = await supabase
+      .from('employees')
+      .select('id')
+      .eq('matricule', employee.matricule)
+      .limit(1);
+
+    if (checkError) {
+      throw new Error(handleSupabaseError(checkError));
+    }
+
+    if (existingEmployee && existingEmployee.length > 0) {
+      throw new Error('Un employé avec ce matricule existe déjà');
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .insert({
+          ...employee,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(handleSupabaseError(error));
+      }
+
+      this.clearCache('employees');
+      return data;
+    } catch (error) {
+      throw new Error(`Erreur lors de la création de l'employé: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   /**
-   * Met à jour un employé
+   * Met à jour un employé avec validation
    */
   static async updateEmployee(id: string, updates: Partial<Employee>): Promise<Employee> {
-    const { data, error } = await supabase
-      .from('employees')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
+    if (!id) throw new Error('ID employé requis');
+    
+    // Validation des données
+    const validationErrors = this.validateEmployee(updates);
+    if (validationErrors.length > 0) {
+      throw new Error(`Données invalides: ${validationErrors.join(', ')}`);
+    }
 
-    if (error) throw error;
-    return data;
+    // Vérification de l'unicité du matricule si modifié
+    if (updates.matricule) {
+      const { data: existingEmployee, error: checkError } = await supabase
+        .from('employees')
+        .select('id')
+        .eq('matricule', updates.matricule)
+        .neq('id', id)
+        .limit(1);
+
+      if (checkError) {
+        throw new Error(handleSupabaseError(checkError));
+      }
+
+      if (existingEmployee && existingEmployee.length > 0) {
+        throw new Error('Un employé avec ce matricule existe déjà');
+      }
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(handleSupabaseError(error));
+      }
+
+      this.clearCache('employees');
+      this.clearCache(`employee_${id}`);
+      
+      return data;
+    } catch (error) {
+      throw new Error(`Erreur lors de la mise à jour de l'employé: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   /**
-   * Supprime un employé
+   * Supprime un employé avec vérifications
    */
   static async deleteEmployee(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('employees')
-      .delete()
-      .eq('id', id);
+    if (!id) throw new Error('ID employé requis');
 
-    if (error) throw error;
+    // Vérifier s'il y a des éléments de paie associés
+    const { data: payItems, error: payItemsError } = await supabase
+      .from('salary_elements')
+      .select('id')
+      .eq('employe_id', id)
+      .limit(1);
+
+    if (payItemsError) {
+      throw new Error(handleSupabaseError(payItemsError));
+    }
+
+    if (payItems && payItems.length > 0) {
+      throw new Error('Impossible de supprimer un employé avec des données de paie associées');
+    }
+
+    try {
+      const { error } = await supabase
+        .from('employees')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw new Error(handleSupabaseError(error));
+      }
+
+      this.clearCache('employees');
+      this.clearCache(`employee_${id}`);
+    } catch (error) {
+      throw new Error(`Erreur lors de la suppression de l'employé: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   // ===== GESTION DES ÉLÉMENTS DE PAIE =====
 
   /**
-   * Récupère les éléments de paie d'un employé pour une période donnée
+   * Récupère les éléments de paie d'un employé
    */
   static async getPayItems(employeId: string, mois: number, annee: number): Promise<PayItem[]> {
-    const { data, error } = await supabase
-      .from('pay_items')
-      .select('*')
-      .eq('employe_id', employeId)
-      .eq('mois', mois)
-      .eq('annee', annee)
-      .order('created_at', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('salary_elements')
+        .select('*')
+        .eq('employe_id', employeId)
+        .eq('mois', mois.toString())
+        .eq('annee', annee);
 
-    if (error) throw error;
-    return data || [];
+      if (error) {
+        throw new Error(handleSupabaseError(error));
+      }
+
+      return data || [];
+    } catch (error) {
+      throw new Error(`Erreur lors de la récupération des éléments de paie: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   /**
    * Ajoute un élément de paie
    */
   static async addPayItem(payItem: Omit<PayItem, 'id' | 'created_at' | 'updated_at'>): Promise<PayItem> {
-    const { data, error } = await supabase
-      .from('pay_items')
-      .insert(payItem)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('salary_elements')
+        .insert({
+          ...payItem,
+          mois: payItem.mois.toString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        throw new Error(handleSupabaseError(error));
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(`Erreur lors de l'ajout de l'élément de paie: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   /**
    * Met à jour un élément de paie
    */
   static async updatePayItem(id: string, updates: Partial<PayItem>): Promise<PayItem> {
-    const { data, error } = await supabase
-      .from('pay_items')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('salary_elements')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
 
-    if (error) throw error;
-    return data;
+      if (error) {
+        throw new Error(handleSupabaseError(error));
+      }
+
+      return data;
+    } catch (error) {
+      throw new Error(`Erreur lors de la mise à jour de l'élément de paie: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   /**
    * Supprime un élément de paie
    */
   static async deletePayItem(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('pay_items')
-      .delete()
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('salary_elements')
+        .delete()
+        .eq('id', id);
 
-    if (error) throw error;
+      if (error) {
+        throw new Error(handleSupabaseError(error));
+      }
+    } catch (error) {
+      throw new Error(`Erreur lors de la suppression de l'élément de paie: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 
   // ===== PARAMÈTRES DE PAIE =====
@@ -540,4 +767,4 @@ export async function validatePayrollCalculations(
   } catch (e) {
     return { ok: false, message: 'Erreur lors de la vérification' };
   }
-} 
+}

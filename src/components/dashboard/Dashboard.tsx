@@ -5,6 +5,7 @@ import { Users, CreditCard, FileText, TrendingUp } from 'lucide-react';
 import { EmployeeStats } from './EmployeeStats';
 import { RecentPayslips } from './RecentPayslips';
 import { PayrollSummary } from './PayrollSummary';
+import { PalettePreview } from '../PalettePreview';
 
 const stats = [
   {
@@ -91,6 +92,9 @@ export const Dashboard = () => {
         <div className="bg-white rounded-xl shadow-lg">
           <RecentPayslips />
         </div>
+      </div>
+      <div className="mt-10">
+        <PalettePreview />
       </div>
     </div>
   );

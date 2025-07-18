@@ -1,6 +1,32 @@
 // Types pour le module RH-Paie
 // Correspond aux tables de base de données
 
+import { MONTHS, PAY_ITEM_TYPES, REPORT_TYPES, CONTRACT_TYPES, EMPLOYEE_STATUS, FAMILY_STATUS, GENDER } from '@/constants/payroll';
+
+// Types utilitaires
+export type Month = typeof MONTHS[number]['value'];
+export type PayItemType = typeof PAY_ITEM_TYPES[number]['value'];
+export type ReportType = typeof REPORT_TYPES[number]['value'];
+export type ContractType = typeof CONTRACT_TYPES[number]['value'];
+export type EmployeeStatus = typeof EMPLOYEE_STATUS[number]['value'];
+export type FamilyStatus = typeof FAMILY_STATUS[number]['value'];
+export type Gender = typeof GENDER[number]['value'];
+
+// Types de base pour les API responses
+export interface ApiResponse<T> {
+  data: T;
+  error?: string;
+  success: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  count: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
 export interface Employee {
   id: string;
   matricule: string;
@@ -258,4 +284,4 @@ export interface PayrollExportOptions {
   include_details?: boolean;
   include_breakdown?: boolean;
   filters?: PayrollFilters;
-} 
+}

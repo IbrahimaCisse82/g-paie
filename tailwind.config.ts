@@ -61,7 +61,49 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Palette personnalisée RH-Paie
+				blue: {
+					50: '#eff6ff',
+					100: '#dbeafe',
+					500: '#3b82f6',
+					600: '#2563eb',
+					700: '#1d4ed8',
+				},
+				orange: {
+					50: '#fff7ed',
+					100: '#ffedd5',
+					500: '#f59e42',
+					600: '#ea580c',
+					700: '#c2410c',
+				},
+				green: {
+					50: '#f0fdf4',
+					100: '#dcfce7',
+					500: '#22c55e',
+					600: '#16a34a',
+					700: '#15803d',
+				},
+				purple: {
+					100: '#f3e8ff',
+					700: '#7c3aed',
+				},
+				yellow: {
+					100: '#fef9c3',
+					700: '#a16207',
+				},
+				gray: {
+					50: '#f9fafb',
+				},
+				white: '#ffffff',
+			},
+			backgroundImage: {
+				// Dégradés principaux
+				'hero-gradient': 'linear-gradient(90deg, #eff6ff 0%, #ffffff 50%, #fff7ed 100%)',
+				'title-gradient': 'linear-gradient(90deg, #2563eb 0%, #f59e42 100%)',
+				'icon-gradient': 'linear-gradient(90deg, #3b82f6 0%, #f59e42 100%)',
+				'cta-gradient': 'linear-gradient(90deg, #2563eb 0%, #ea580c 100%)',
+				'section-gradient': 'linear-gradient(90deg, #eff6ff 0%, #fff7ed 100%)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
